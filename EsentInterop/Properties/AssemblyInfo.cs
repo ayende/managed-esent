@@ -44,7 +44,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 
-#if STRONGLY_SIGNED
+#if !STRONGLY_SIGNED
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("InteropApiTests")]
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Pixie")]
