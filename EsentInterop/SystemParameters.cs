@@ -4,11 +4,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using Microsoft.Isam.Esent.Interop.Vista;
-using Microsoft.Isam.Esent.Interop.Windows7;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using Microsoft.Isam.Esent.Interop.Vista;
+    using Microsoft.Isam.Esent.Interop.Windows7;
+
     /// <summary>
     /// This class provides static properties to set and get
     /// global ESENT system parameters.
@@ -104,10 +104,6 @@ namespace Microsoft.Isam.Esent.Interop
         /// <summary>
         /// Gets the maximum key size. This depends on the Esent version and database
         /// page size.
-        /// <para>
-        /// Supported on Windows Vista and up. Ignored on Windows XP and
-        /// Windows Server 2003.
-        /// </para>
         /// </summary>
         public static int KeyMost
         {
@@ -148,10 +144,6 @@ namespace Microsoft.Isam.Esent.Interop
 
         /// <summary>
         /// Gets the lv chunks size. This depends on the database page size.
-        /// <para>
-        /// Supported on Windows 7 and up. Ignored on Windows XP,
-        /// Windows Server 2003, Windows Vista and Windows Server 2008.
-        /// </para>
         /// </summary>
         public static int LVChunkSizeMost
         {
@@ -268,7 +260,7 @@ namespace Microsoft.Isam.Esent.Interop
         private static void SetBoolParameter(JET_param param, bool value)
         {
             int setting = value ? 1 : 0;
-            Api.JetSetSystemParameter(JET_INSTANCE.Nil, JET_SESID.Nil, param, 1, null);
+            Api.JetSetSystemParameter(JET_INSTANCE.Nil, JET_SESID.Nil, param, setting, null);
         }
 
         /// <summary>

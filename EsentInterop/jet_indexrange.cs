@@ -4,21 +4,42 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+
     /// <summary>
     /// The native version of the JET_INDEXRANGE structure.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal struct NATIVE_INDEXRANGE
     {
+        /// <summary>
+        /// Size of the structure.
+        /// </summary>
         public uint cbStruct;
+
+        /// <summary>
+        /// Cursor containing the index range.
+        /// </summary>
         public IntPtr tableid;
+
+        /// <summary>
+        /// Index range options.
+        /// </summary>
         public uint grbit;
 
+        /// <summary>
+        /// Create a NATIVE_INDEXRANGE from a cursor.
+        /// </summary>
+        /// <param name="tableid">The cursor containing the index range.</param>
+        /// <returns>A new NATIVE_INDEXRANGE on the cursor.</returns>
         public static NATIVE_INDEXRANGE MakeIndexRangeFromTableid(JET_TABLEID tableid)
         {
             var s = new NATIVE_INDEXRANGE
@@ -34,6 +55,10 @@ namespace Microsoft.Isam.Esent.Interop
     /// <summary>
     /// Identifies an index range when it is used with the JetIntersectIndexes function.
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     public class JET_INDEXRANGE
     {
         /// <summary>

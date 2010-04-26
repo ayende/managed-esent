@@ -4,10 +4,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Globalization;
+
     /// <summary>
     /// A JET_INSTANCE contains a handle to the instance of the database to use for calls to the JET Api.
     /// </summary>
@@ -56,7 +57,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>The structure as a string.</returns>
         public override string ToString()
         {
-            return String.Format("JET_INSTANCE(0x{0:x})", this.Value.ToInt64());
+            return String.Format(CultureInfo.InvariantCulture, "JET_INSTANCE(0x{0:x})", this.Value.ToInt64());
         }
 
         /// <summary>
@@ -144,7 +145,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>The structure as a string.</returns>
         public override string ToString()
         {
-            return String.Format("JET_SESID(0x{0:x})", this.Value.ToInt64());
+            return String.Format(CultureInfo.InvariantCulture, "JET_SESID(0x{0:x})", this.Value.ToInt64());
         }
 
         /// <summary>
@@ -233,7 +234,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>The structure as a string.</returns>
         public override string ToString()
         {
-            return String.Format("JET_TABLEID(0x{0:x})", this.Value.ToInt64());
+            return String.Format(CultureInfo.InvariantCulture, "JET_TABLEID(0x{0:x})", this.Value.ToInt64());
         }
 
         /// <summary>
@@ -325,7 +326,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>The structure as a string.</returns>
         public override string ToString()
         {
-            return String.Format("JET_DBID({0})", this.Value);
+            return String.Format(CultureInfo.InvariantCulture, "JET_DBID({0})", this.Value);
         }
 
         /// <summary>
@@ -413,7 +414,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>The structure as a string.</returns>
         public override string ToString()
         {
-            return String.Format("JET_COLUMNID(0x{0:x})", this.Value);
+            return String.Format(CultureInfo.InvariantCulture, "JET_COLUMNID(0x{0:x})", this.Value);
         }
 
         /// <summary>
@@ -448,6 +449,268 @@ namespace Microsoft.Isam.Esent.Interop
         /// <param name="other">An instance to compare with this instance.</param>
         /// <returns>True if the two instances are equal.</returns>
         public bool Equals(JET_COLUMNID other)
+        {
+            return this.Value.Equals(other.Value);
+        }
+    }
+
+    /// <summary>
+    /// A JET_OSSNAPID contains a handle to a snapshot of a database.
+    /// </summary>
+    public struct JET_OSSNAPID : IEquatable<JET_OSSNAPID>
+    {
+        /// <summary>
+        /// The native value.
+        /// </summary>
+        internal IntPtr Value;
+
+        /// <summary>
+        /// Gets a null JET_OSSNAPID.
+        /// </summary>
+        public static JET_OSSNAPID Nil
+        {
+            get { return new JET_OSSNAPID(); }
+        }
+
+        /// <summary>
+        /// Determines whether two specified instances of JET_OSSNAPID
+        /// are equal.
+        /// </summary>
+        /// <param name="lhs">The first instance to compare.</param>
+        /// <param name="rhs">The second instance to compare.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public static bool operator ==(JET_OSSNAPID lhs, JET_OSSNAPID rhs)
+        {
+            return lhs.Value == rhs.Value;
+        }
+
+        /// <summary>
+        /// Determines whether two specified instances of JET_OSSNAPID
+        /// are not equal.
+        /// </summary>
+        /// <param name="lhs">The first instance to compare.</param>
+        /// <param name="rhs">The second instance to compare.</param>
+        /// <returns>True if the two instances are not equal.</returns>
+        public static bool operator !=(JET_OSSNAPID lhs, JET_OSSNAPID rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        /// <summary>
+        /// Generate a string representation of the structure.
+        /// </summary>
+        /// <returns>The structure as a string.</returns>
+        public override string ToString()
+        {
+            return String.Format(CultureInfo.InvariantCulture, "JET_OSSNAPID(0x{0:x})", this.Value.ToInt64());
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this instance is equal
+        /// to another instance.
+        /// </summary>
+        /// <param name="obj">An object to compare with this instance.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return this.Equals((JET_OSSNAPID)obj);
+        }
+
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
+        public override int GetHashCode()
+        {
+            return this.Value.GetHashCode();
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this instance is equal
+        /// to another instance.
+        /// </summary>
+        /// <param name="other">An instance to compare with this instance.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public bool Equals(JET_OSSNAPID other)
+        {
+            return this.Value.Equals(other.Value);
+        }
+    }
+
+    /// <summary>
+    /// A JET_HANDLE contains a generic handle.
+    /// </summary>
+    public struct JET_HANDLE : IEquatable<JET_HANDLE>
+    {
+        /// <summary>
+        /// The native value.
+        /// </summary>
+        internal IntPtr Value;
+
+        /// <summary>
+        /// Gets a null JET_HANDLE.
+        /// </summary>
+        public static JET_HANDLE Nil
+        {
+            get { return new JET_HANDLE(); }
+        }
+
+        /// <summary>
+        /// Determines whether two specified instances of JET_HANDLE
+        /// are equal.
+        /// </summary>
+        /// <param name="lhs">The first instance to compare.</param>
+        /// <param name="rhs">The second instance to compare.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public static bool operator ==(JET_HANDLE lhs, JET_HANDLE rhs)
+        {
+            return lhs.Value == rhs.Value;
+        }
+
+        /// <summary>
+        /// Determines whether two specified instances of JET_HANDLE
+        /// are not equal.
+        /// </summary>
+        /// <param name="lhs">The first instance to compare.</param>
+        /// <param name="rhs">The second instance to compare.</param>
+        /// <returns>True if the two instances are not equal.</returns>
+        public static bool operator !=(JET_HANDLE lhs, JET_HANDLE rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        /// <summary>
+        /// Generate a string representation of the structure.
+        /// </summary>
+        /// <returns>The structure as a string.</returns>
+        public override string ToString()
+        {
+            return String.Format(CultureInfo.InvariantCulture, "JET_HANDLE(0x{0:x})", this.Value.ToInt64());
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this instance is equal
+        /// to another instance.
+        /// </summary>
+        /// <param name="obj">An object to compare with this instance.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return this.Equals((JET_HANDLE)obj);
+        }
+
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
+        public override int GetHashCode()
+        {
+            return this.Value.GetHashCode();
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this instance is equal
+        /// to another instance.
+        /// </summary>
+        /// <param name="other">An instance to compare with this instance.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public bool Equals(JET_HANDLE other)
+        {
+            return this.Value.Equals(other.Value);
+        }
+    }
+
+    /// <summary>
+    /// Local storage for an ESENT handle. Used by <see cref="Api.JetGetLS"/>
+    /// and <see cref="Api.JetSetLS"/>.
+    /// </summary>
+    public struct JET_LS : IEquatable<JET_LS>
+    {
+        /// <summary>
+        /// The null handle.
+        /// </summary>
+        public static readonly JET_LS Nil = new JET_LS { Value = new IntPtr(~0) };
+
+        /// <summary>
+        /// Gets or sets the value of the handle.
+        /// </summary>
+        public IntPtr Value { get; set; }
+
+        /// <summary>
+        /// Determines whether two specified instances of JET_LS
+        /// are equal.
+        /// </summary>
+        /// <param name="lhs">The first instance to compare.</param>
+        /// <param name="rhs">The second instance to compare.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public static bool operator ==(JET_LS lhs, JET_LS rhs)
+        {
+            return lhs.Value == rhs.Value;
+        }
+
+        /// <summary>
+        /// Determines whether two specified instances of JET_LS
+        /// are not equal.
+        /// </summary>
+        /// <param name="lhs">The first instance to compare.</param>
+        /// <param name="rhs">The second instance to compare.</param>
+        /// <returns>True if the two instances are not equal.</returns>
+        public static bool operator !=(JET_LS lhs, JET_LS rhs)
+        {
+            return !(lhs == rhs);
+        }
+
+        /// <summary>
+        /// Generate a string representation of the structure.
+        /// </summary>
+        /// <returns>The structure as a string.</returns>
+        public override string ToString()
+        {
+            return String.Format(CultureInfo.InvariantCulture, "JET_LS(0x{0:x})", this.Value.ToInt64());
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this instance is equal
+        /// to another instance.
+        /// </summary>
+        /// <param name="obj">An object to compare with this instance.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj == null || GetType() != obj.GetType())
+            {
+                return false;
+            }
+
+            return this.Equals((JET_LS)obj);
+        }
+
+        /// <summary>
+        /// Returns the hash code for this instance.
+        /// </summary>
+        /// <returns>The hash code for this instance.</returns>
+        public override int GetHashCode()
+        {
+            return this.Value.GetHashCode();
+        }
+
+        /// <summary>
+        /// Returns a value indicating whether this instance is equal
+        /// to another instance.
+        /// </summary>
+        /// <param name="other">An instance to compare with this instance.</param>
+        /// <returns>True if the two instances are equal.</returns>
+        public bool Equals(JET_LS other)
         {
             return this.Value.Equals(other.Value);
         }

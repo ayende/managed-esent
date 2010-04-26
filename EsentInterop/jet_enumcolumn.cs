@@ -4,15 +4,24 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+
     /// <summary>
     /// Native (unmanaged) version of the JET_ENUMCOLUMN structure.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal unsafe struct NATIVE_ENUMCOLUMN
     {
         /// <summary>
@@ -87,7 +96,7 @@ namespace Microsoft.Isam.Esent.Interop
 
             set
             {
-                this.pvData = (IntPtr) value;
+                this.pvData = new IntPtr(value);
             }
         }
     }
@@ -98,6 +107,10 @@ namespace Microsoft.Isam.Esent.Interop
     /// structures. The array is returned in memory that was allocated using
     /// the callback that was supplied to that function.
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     public class JET_ENUMCOLUMN
     {
         /// <summary>

@@ -3,34 +3,13 @@
     <BooleanProperty Name="WriteCache">False</BooleanProperty>
   </GlobalSettings>
   <Analyzers>
-    <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.DocumentationRules">
-      <Rules>
-        <Rule Name="ElementsMustBeDocumented">
-          <RuleSettings>
-            <BooleanProperty Name="Enabled">False</BooleanProperty>
-          </RuleSettings>
-        </Rule>
-      </Rules>
-      <AnalyzerSettings />
-    </Analyzer>
     <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.NamingRules">
-      <Rules>
-        <Rule Name="ElementMustBeginWithUpperCaseLetter">
-          <RuleSettings>
-            <BooleanProperty Name="Enabled">False</BooleanProperty>
-          </RuleSettings>
-        </Rule>
-        <Rule Name="AccessibleFieldsMustBeginWithUpperCaseLetter">
-          <RuleSettings>
-            <BooleanProperty Name="Enabled">False</BooleanProperty>
-          </RuleSettings>
-        </Rule>
-      </Rules>
       <AnalyzerSettings>
         <CollectionProperty Name="Hungarian">
           <Value>c</Value>
           <Value>cb</Value>
           <Value>dw</Value>
+          <Value>h</Value>
           <Value>ib</Value>
           <Value>pv</Value>
           <Value>rg</Value>
@@ -40,15 +19,23 @@
         </CollectionProperty>
       </AnalyzerSettings>
     </Analyzer>
-    <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.OrderingRules">
+    <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.DocumentationRules">
       <Rules>
-        <Rule Name="UsingDirectivesMustBePlacedWithinNamespace">
+        <Rule Name="DocumentationTextMustBeginWithACapitalLetter">
           <RuleSettings>
-            <BooleanProperty Name="Enabled">False</BooleanProperty>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
+          </RuleSettings>
+        </Rule>
+        <Rule Name="DocumentationTextMustEndWithAPeriod">
+          <RuleSettings>
+            <BooleanProperty Name="Enabled">True</BooleanProperty>
           </RuleSettings>
         </Rule>
       </Rules>
-      <AnalyzerSettings />
+      <AnalyzerSettings>
+        <StringProperty Name="CompanyName">Microsoft Corporation</StringProperty>
+        <StringProperty Name="Copyright">Copyright (c) Microsoft Corporation.</StringProperty>
+      </AnalyzerSettings>
     </Analyzer>
   </Analyzers>
 </StyleCopSettings>

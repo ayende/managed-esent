@@ -4,28 +4,77 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-using Microsoft.Isam.Esent.Interop.Vista;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+    using Microsoft.Isam.Esent.Interop.Vista;
+
     /// <summary>
     /// The native version of the JET_INDEXCREATE structure.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal unsafe struct NATIVE_INDEXCREATE
     {
+        /// <summary>
+        /// Size of the structure.
+        /// </summary>
         public uint cbStruct;
+
+        /// <summary>
+        /// Name of the index.
+        /// </summary>
         public string szIndexName;
+
+        /// <summary>
+        /// Index key description.
+        /// </summary>
         public string szKey;
+
+        /// <summary>
+        /// Size of index key description.
+        /// </summary>
         public uint cbKey;
+
+        /// <summary>
+        /// Index options.
+        /// </summary>
         public uint grbit;
+
+        /// <summary>
+        /// Index density.
+        /// </summary>
         public uint ulDensity;
+
+        /// <summary>
+        /// Pointer to unicode sort options.
+        /// </summary>
         public NATIVE_UNICODEINDEX* pidxUnicode;
-        public IntPtr cbVarSegMac;  // can also be JET_TUPLELIMITS*
+
+        /// <summary>
+        /// Maximum size of column data to index. This can also be
+        /// a pointer to a JET_TUPLELIMITS structure.
+        /// </summary>
+        public IntPtr cbVarSegMac;
+
+        /// <summary>
+        /// Pointer to array of conditional columns.
+        /// </summary>
         public IntPtr rgconditionalcolumn;
+
+        /// <summary>
+        /// Count of conditional columns.
+        /// </summary>
         public uint cConditionalColumn;
+
+        /// <summary>
+        /// Returned error from index creation.
+        /// </summary>
         public int err;
     }
 
@@ -34,15 +83,30 @@ namespace Microsoft.Isam.Esent.Interop
     /// member, which is only valid on Windows Vista and above.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal struct NATIVE_INDEXCREATE2
     {
+        /// <summary>
+        /// Nested NATIVE_INDEXCREATE structure.
+        /// </summary>
         public NATIVE_INDEXCREATE indexcreate;
+
+        /// <summary>
+        /// Maximum size of the key.
+        /// </summary>
         public uint cbKeyMost;
     }
 
     /// <summary>
     /// Contains the information needed to create an index over data in an ESE database.
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     public class JET_INDEXCREATE
     {
         /// <summary>
@@ -138,7 +202,7 @@ namespace Microsoft.Isam.Esent.Interop
                 throw new ArgumentNullException("szKey");
             }
 
-            if (this.cbKey > this.szKey.Length + 1)
+            if (this.cbKey > checked(this.szKey.Length + 1))
             {
                 throw new ArgumentOutOfRangeException("cbKey", this.cbKey, "cannot be greater than the length of szKey");
             }

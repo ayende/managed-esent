@@ -4,11 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Collections.Generic;
-using System.Globalization;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Globalization;
+
     /// <summary>
     /// Provide methods to convert data and flags between 
     /// Win32 and the .NET Framework.
@@ -32,17 +33,37 @@ namespace Microsoft.Isam.Esent.Interop
         static Conversions()
         {
             // Rather than creating both dictionaries, define one as the inverse of the other.
-            Conversions.compareOptionsToLcmapFlags = new Dictionary<CompareOptions, uint>()
+            compareOptionsToLcmapFlags = new Dictionary<CompareOptions, uint>()
             {
-                { CompareOptions.IgnoreCase, Conversions.NativeMethods.NORM_IGNORECASE },
-                { CompareOptions.IgnoreKanaType, Conversions.NativeMethods.NORM_IGNOREKANATYPE },
-                { CompareOptions.IgnoreNonSpace, Conversions.NativeMethods.NORM_IGNORENONSPACE },
-                { CompareOptions.IgnoreSymbols, Conversions.NativeMethods.NORM_IGNORESYMBOLS },
-                { CompareOptions.IgnoreWidth, Conversions.NativeMethods.NORM_IGNOREWIDTH },
-                { CompareOptions.StringSort, Conversions.NativeMethods.SORT_STRINGSORT }
+                { CompareOptions.IgnoreCase, NativeMethods.NORM_IGNORECASE },
+                { CompareOptions.IgnoreKanaType, NativeMethods.NORM_IGNOREKANATYPE },
+                { CompareOptions.IgnoreNonSpace, NativeMethods.NORM_IGNORENONSPACE },
+                { CompareOptions.IgnoreSymbols, NativeMethods.NORM_IGNORESYMBOLS },
+                { CompareOptions.IgnoreWidth, NativeMethods.NORM_IGNOREWIDTH },
+                { CompareOptions.StringSort, NativeMethods.SORT_STRINGSORT }
             };
 
-            Conversions.lcmapFlagsToCompareOptions = Conversions.InvertDictionary(Conversions.compareOptionsToLcmapFlags);
+            lcmapFlagsToCompareOptions = InvertDictionary(compareOptionsToLcmapFlags);
+        }
+
+        /// <summary>
+        /// Convert a double (OA date time format) to a DateTime. Unlike DateTime.FromOADate
+        /// this doesn't throw exceptions.
+        /// </summary>
+        /// <param name="d">The double value.</param>
+        /// <returns>A DateTime.</returns>
+        public static DateTime ConvertDoubleToDateTime(double d)
+        {
+            try
+            {
+                return DateTime.FromOADate(d);
+            }
+            catch (ArgumentException)
+            {
+                // Not all double values are valid OADates. We deal with out-of-range values
+                // by returning either min or max
+                return d < 0 ? DateTime.MinValue : DateTime.MaxValue;
+            }
         }
 
         /// <summary>
@@ -51,15 +72,16 @@ namespace Microsoft.Isam.Esent.Interop
         /// </summary>
         /// <param name="lcmapFlags">LCMapString flags.</param>
         /// <returns>CompareOptions describing the (known) flags.</returns>
+        [CLSCompliant(false)]
         public static CompareOptions CompareOptionsFromLCMapFlags(uint lcmapFlags)
         {
             // This should be a template, but there isn't an elegant way to express than with C# generics
             CompareOptions options = CompareOptions.None;
-            foreach (uint flag in Conversions.lcmapFlagsToCompareOptions.Keys)
+            foreach (uint flag in lcmapFlagsToCompareOptions.Keys)
             {
                 if (flag == (lcmapFlags & flag))
                 {
-                    options |= Conversions.lcmapFlagsToCompareOptions[flag];
+                    options |= lcmapFlagsToCompareOptions[flag];
                 }
             }
 
@@ -71,15 +93,16 @@ namespace Microsoft.Isam.Esent.Interop
         /// </summary>
         /// <param name="compareOptions">The options to convert.</param>
         /// <returns>The LCMapString flags that match the compare options. Unsupported options are ignored.</returns>
+        [CLSCompliant(false)]
         public static uint LCMapFlagsFromCompareOptions(CompareOptions compareOptions)
         {
             // This should be a template, but there isn't an elegant way to express than with C# generics
             uint flags = 0;
-            foreach (CompareOptions option in Conversions.compareOptionsToLcmapFlags.Keys)
+            foreach (CompareOptions option in compareOptionsToLcmapFlags.Keys)
             {
                 if (option == (compareOptions & option))
                 {
-                    flags |= Conversions.compareOptionsToLcmapFlags[option];
+                    flags |= compareOptionsToLcmapFlags[option];
                 }
             }
 
@@ -95,7 +118,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>An inverted dictionary.</returns>
         private static IDictionary<TKey, TValue> InvertDictionary<TValue, TKey>(IDictionary<TValue, TKey> dict)
         {
-            var invertedDict = new Dictionary<TKey, TValue>();
+            var invertedDict = new Dictionary<TKey, TValue>(dict.Count);
             foreach (KeyValuePair<TValue, TKey> entry in dict)
             {
                 invertedDict.Add(entry.Value, entry.Key);
@@ -107,7 +130,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <summary>
         /// This class contains the unmanaged constants used in the conversion.
         /// </summary>
-        public static class NativeMethods
+        internal static class NativeMethods
         {
             #region Win32 Constants
 

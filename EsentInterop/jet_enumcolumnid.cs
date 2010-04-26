@@ -4,20 +4,36 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+
     /// <summary>
     /// The native (unmanaged) version of the
     /// <see cref="JET_ENUMCOLUMNID"/> class.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal unsafe struct NATIVE_ENUMCOLUMNID
     {
+        /// <summary>
+        /// Column ID to enumerate.
+        /// </summary>
         public uint columnid;
+
+        /// <summary>
+        /// Count of column values to enumerate.
+        /// </summary>
         public uint ctagSequence;
+
+        /// <summary>
+        /// Column values to enumerate.
+        /// </summary>
         public uint* rgtagSequence;
     }
 
@@ -27,6 +43,10 @@ namespace Microsoft.Isam.Esent.Interop
     /// function is used. JetEnumerateColumns optionally takes an array of
     /// JET_ENUMCOLUMNID structures.
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     public class JET_ENUMCOLUMNID
     {
         /// <summary>

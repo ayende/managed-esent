@@ -4,13 +4,15 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.IO;
-using Microsoft.Isam.Esent.Interop.Vista;
-using Microsoft.Isam.Esent.Interop.Windows7;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Globalization;
+    using System.IO;
+    using Microsoft.Isam.Esent.Interop.Server2003;
+    using Microsoft.Isam.Esent.Interop.Vista;
+    using Microsoft.Isam.Esent.Interop.Windows7;
+
     /// <summary>
     /// This class provides properties to set and get system parameters
     /// on an ESENT instance.
@@ -89,6 +91,39 @@ namespace Microsoft.Isam.Esent.Interop
             set
             {
                 this.SetStringParameter(JET_param.LogFilePath, AddTrailingDirectorySeparator(value));
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the relative or absolute file system path of the
+        /// a folder where crash recovery or a restore operation can find
+        /// the databases referenced in the transaction log in the
+        /// specified folder.
+        /// </summary>
+        /// <remarks>
+        /// This parameter is ignored on Windows XP.
+        /// </remarks>
+        public string AlternateDatabaseRecoveryDirectory
+        {
+            get
+            {
+                if (EsentVersion.SupportsServer2003Features)
+                {
+                    return
+                        AddTrailingDirectorySeparator(
+                            this.GetStringParameter(Server2003Param.AlternateDatabaseRecoveryPath));
+                }
+
+                return null;
+            }
+
+            set
+            {
+                if (EsentVersion.SupportsServer2003Features)
+                {
+                    this.SetStringParameter(
+                        Server2003Param.AlternateDatabaseRecoveryPath, AddTrailingDirectorySeparator(value));
+                }
             }
         }
 
@@ -332,7 +367,7 @@ namespace Microsoft.Isam.Esent.Interop
         {
             get
             {
-                return 0 == String.Compare(this.GetStringParameter(JET_param.Recovery), "on", true);
+                return 0 == String.Compare(this.GetStringParameter(JET_param.Recovery), "on", StringComparison.OrdinalIgnoreCase);
             }
 
             set

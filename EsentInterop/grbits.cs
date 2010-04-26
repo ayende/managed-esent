@@ -4,12 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using Microsoft.Isam.Esent.Interop.Server2003;
-using Microsoft.Isam.Esent.Interop.Windows7;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using Microsoft.Isam.Esent.Interop.Server2003;
+    using Microsoft.Isam.Esent.Interop.Windows7;
+
     /// <summary>
     /// Options for JetCreateInstance2.
     /// </summary>
@@ -32,6 +32,32 @@ namespace Microsoft.Isam.Esent.Interop
         /// Default options.
         /// </summary>
         None = 0
+    }
+
+    /// <summary>
+    /// Options for JetTerm2.
+    /// </summary>
+    /// <seealso cref="Windows7Grbits.Dirty"/>
+    public enum TermGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+        
+        /// <summary>
+        /// Requests that the instance be shut down cleanly. Any optional
+        /// cleanup work that would ordinarily be done in the background at
+        /// run time is completed immediately.
+        /// </summary>
+        Complete = 1,
+
+        /// <summary>
+        /// Requests that the instance be shut down as quickly as possible.
+        /// Any optional work that would ordinarily be done in the
+        /// background at run time is abandoned. 
+        /// </summary>
+        Abrupt = 2,
     }
 
     /// <summary>
@@ -119,10 +145,96 @@ namespace Microsoft.Isam.Esent.Interop
     }
 
     /// <summary>
-    /// Options for JetTerm2.
+    /// Options for <see cref="Api.JetCompact"/>.
     /// </summary>
-    /// <seealso cref="Windows7Grbits.Dirty"/>
-    public enum TermGrbit
+    [Flags]
+    public enum CompactGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Causes JetCompact to dump statistics on the source database to a file
+        ///  named DFRGINFO.TXT. Statistics include the name of each table in
+        /// source database, number of rows in each table, total size in bytes of
+        /// all rows in each table, total size in bytes of all columns of type
+        /// <see cref="JET_coltyp.LongText"/> or <see cref="JET_coltyp.LongBinary"/>
+        /// that were large enough to be stored separate from the record, number
+        /// of clustered index leaf pages, and the number of long value leaf pages.
+        /// In addition, summary statistics including the size of the source database,
+        /// destination database, time required for database compaction, temporary
+        /// database space are all dumped as well.
+        /// </summary>
+        Stats = 0x20,
+
+        /// <summary>
+        /// Used when the source database is known to be corrupt. It enables a
+        /// whole set of new behaviors intended to salvage as much data as
+        /// possible from the source database. JetCompact with this option set
+        /// may return <see cref="JET_err.Success"/> but not copy all of the data
+        /// created in the source database. Data that was in damaged portions of
+        /// the source database will be skipped.
+        /// </summary>
+        [Obsolete("Use esentutl repair functionality instead.")]
+        Repair = 0x40,        
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetOSSnapshotFreeze"/>.
+    /// </summary>
+    public enum SnapshotFreezeGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetOSSnapshotPrepare"/>.
+    /// </summary>
+    [Flags]
+    public enum SnapshotPrepareGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+    
+        /// <summary>
+        /// Only logfiles will be taken.
+        /// </summary>
+        IncrementalSnapshot = 0x1,
+
+        /// <summary>
+        /// A copy snapshot (normal or incremental) with no log truncation.
+        /// </summary>
+        CopySnapshot = 0x2,
+
+        /// <summary>
+        /// The snapshot session continues after JetOSSnapshotThaw and will
+        /// require a JetOSSnapshotEnd function call.
+        /// </summary>
+        ContinueAfterThaw = 0x4,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetOSSnapshotThaw"/>.
+    /// </summary>
+    public enum SnapshotThawGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetBackupInstance"/>.
+    /// </summary>
+    public enum BackupGrbit
     {
         /// <summary>
         /// Default options.
@@ -130,18 +242,75 @@ namespace Microsoft.Isam.Esent.Interop
         None = 0,
         
         /// <summary>
-        /// Requests that the instance be shut down cleanly. Any optional
-        /// cleanup work that would ordinarily be done in the background at
-        /// run time is completed immediately.
+        /// Creates an incremental backup as opposed to a full backup. This
+        /// means that only the log files created since the last full or
+        /// incremental backup will be backed up.
         /// </summary>
-        Complete = 1,
+        Incremental = 0x1,
 
         /// <summary>
-        /// Requests that the instance be shut down as quickly as possible.
-        /// Any optional work that would ordinarily be done in the
-        /// background at run time is abandoned. 
+        /// Creates a full backup of the database. This allows the preservation
+        /// of an existing backup in the same directory if the new backup fails.
         /// </summary>
-        Abrupt = 2,
+        Atomic = 0x4,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetBeginExternalBackupInstance"/>.
+    /// </summary>
+    public enum BeginExternalBackupGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Creates an incremental backup as opposed to a full backup. This
+        /// means that only the log files since the last full or incremental
+        /// backup will be backed up.
+        /// </summary>
+        Incremental = 0x1,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetEndExternalBackupInstance"/>.
+    /// </summary>
+    public enum EndExternalBackupGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The client application finished the backup completely, and is ending normally.
+        /// </summary>
+        Normal = 0x1,
+
+        /// <summary>
+        /// The client application is aborting the backup.
+        /// </summary>
+        Abort = 0x2,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetBeginTransaction2"/>.
+    /// </summary>
+    public enum BeginTransactionGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The transaction will not modify the database. If an update is attempted,
+        /// that operation will fail with <see cref="JET_err.TransReadOnly"/>. This
+        /// option is ignored unless it is requested when the given session is not
+        /// already in a transaction.
+        /// </summary>
+        ReadOnly = 0x1,
     }
 
     /// <summary>
@@ -206,7 +375,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <summary>
         /// Default options.
         /// </summary>
-        None,
+        None = 0,
     }
 
     /// <summary>
@@ -221,50 +390,50 @@ namespace Microsoft.Isam.Esent.Interop
         None = 0,
 
         /// <summary>
-        /// This table cannot be opened for read access by another session.
-        /// </summary>
-        DenyRead,
-
-        /// <summary>
         /// This table cannot be opened for write access by another session.
         /// </summary>
-        DenyWrite,
+        DenyWrite = 0x1,
 
         /// <summary>
-        /// Do not cache pages for this table.
+        /// This table cannot be opened for read access by another session.
         /// </summary>
-        NoCache,
+        DenyRead = 0x2,
+
+        /// <summary>
+        /// Request read-only access to the table.
+        /// </summary>
+        ReadOnly = 0x4,
+
+        /// <summary>
+        /// Request write access to the table.
+        /// </summary>
+        Updatable = 0x8,
 
         /// <summary>
         /// Allow DDL modifications to a table flagged as FixedDDL. This option
         /// must be used with DenyRead.
         /// </summary>
-        PermitDDL,
+        PermitDDL = 0x10,
+
+        /// <summary>
+        /// Do not cache pages for this table.
+        /// </summary>
+        NoCache = 0x20,
 
         /// <summary>
         /// Provides a hint that the table is probably not in the buffer cache, and
         /// that pre-reading may be beneficial to performance.
         /// </summary>
-        Preread,
-
-        /// <summary>
-        /// Request read-only access to the table.
-        /// </summary>
-        ReadOnly,
+        Preread = 0x40,
 
         /// <summary>
         /// Assume a sequential access pattern and prefetch database pages.
         /// </summary>
-        Sequential,
-
-        /// <summary>
-        /// Request write access to the table.
-        /// </summary>
-        Updatable,
+        Sequential = 0x8000
     }
 
     /// <summary>
-    /// Options for JetDupCursor.
+    /// Options for <see cref="Api.JetDupCursor"/>.
     /// </summary>
     public enum DupCursorGrbit
     {
@@ -272,6 +441,35 @@ namespace Microsoft.Isam.Esent.Interop
         /// Default options.
         /// </summary>
         None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetSetLS"/> and <see cref="Api.JetGetLS"/>.
+    /// </summary>
+    [Flags]
+    public enum LsGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The context handle for the chosen object should be reset to JET_LSNil.
+        /// </summary>
+        Reset = 0x1,
+
+        /// <summary>
+        /// Specifies the context handle should be associated with the given cursor.
+        /// </summary>
+        Cursor = 0x2,
+
+        /// <summary>
+        /// Specifies that the context handle should be associated with the
+        /// table associated with the given cursor. It is illegal to use this
+        /// option with <see cref="Cursor"/>.
+        /// </summary>
+        Table = 0x4,
     }
 
     /// <summary>
@@ -493,6 +691,69 @@ namespace Microsoft.Isam.Esent.Interop
     }
 
     /// <summary>
+    /// Options for <see cref="Api.JetGetRecordSize"/>.
+    /// </summary>
+    [Flags]
+    public enum GetRecordSizeGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Retrieve the size of the record that is in the copy buffer prepared
+        /// or update. Otherwise, the tableid must be positioned on a record,
+        /// and that record will be used.
+        /// </summary>
+        InCopyBuffer = 0x1,
+
+        /// <summary>
+        /// The JET_RECSIZE is not zeroed before filling the contents, effectively
+        /// acting as an accumulation of the statistics for multiple records visited
+        /// or updated.
+        /// </summary>
+        RunningTotal = 0x2,
+
+        /// <summary>
+        /// Ignore non-intrinsic Long Values. Only the local record on the page
+        /// will be used.
+        /// </summary>
+        Local = 0x4,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetGetSecondaryIndexBookmark"/>.
+    /// </summary>
+    public enum GetSecondaryIndexBookmarkGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetGotoSecondaryIndexBookmark"/>.
+    /// </summary>
+    public enum GotoSecondaryIndexBookmarkGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// In the event that the index entry can no longer be found, the cursor
+        /// will be left positioned where that index entry was previously found.
+        /// The operation will still fail with JET_errRecordDeleted; however,
+        /// it will be possible to move to the next or previous index entry
+        /// relative to the index entry that is now missing.
+        /// </summary>
+        BookmarkPermitVirtualCurrency = 0x1,
+    }
+
+    /// <summary>
     /// Options for JetMove.
     /// </summary>
     public enum MoveGrbit
@@ -500,7 +761,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <summary>
         /// Default options.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// Moves the cursor forward or backward by the number of index entries
@@ -520,7 +781,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <summary>
         /// Default options.
         /// </summary>
-        None,
+        None = 0,
 
         /// <summary>
         /// A new search key should be constructed. Any previously existing search
@@ -708,6 +969,32 @@ namespace Microsoft.Isam.Esent.Interop
         /// Default options.
         /// </summary>
         None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetSetCurrentIndex2"/> and 
+    /// <see cref="Api.JetSetCurrentIndex3"/>.
+    /// </summary>
+    public enum SetCurrentIndexGrbit
+    {
+        /// <summary>
+        /// Default options. This is the same as <see cref="MoveFirst"/>.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Indicates that the cursor should be positioned on the first entry of
+        /// the specified index. If the current index is being selected then this
+        /// option is ignored.
+        /// </summary>
+        MoveFirst = 0,
+
+        /// <summary>
+        /// Indicates that the cursor should be positioned on the index entry
+        /// of the new index that corresponds to the record associated with the
+        /// index entry at the current position of the cursor on the old index.
+        /// </summary>
+        NoMove = 0x2,
     }
 
     /// <summary>
@@ -1078,7 +1365,46 @@ namespace Microsoft.Isam.Esent.Interop
     }
 
     /// <summary>
-    /// Options for JetIdle() API
+    /// Options for <see cref="Api.JetDeleteColumn2"/>.
+    /// </summary>
+    public enum DeleteColumnGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// The API should only attempt to delete columns in the derived table.
+        /// If a column of that name exists in the base table it will be ignored.
+        /// </summary>
+        IgnoreTemplateColumns = 0x1,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetRenameColumn"/>.
+    /// </summary>
+    public enum RenameColumnGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetSetColumnDefaultValue"/>.
+    /// </summary>
+    public enum SetColumnDefaultValueGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetIdle"/>.
     /// </summary>
     [Flags]
     public enum IdleGrbit
@@ -1091,10 +1417,42 @@ namespace Microsoft.Isam.Esent.Interop
         /// <summary>Triggers cleanup of the version store.</summary>
         FlushBuffers = 0x01,
 
-        /// <summary>Reserverd for future use. If this flag is specified, the API will return JET_errInvalidgrbit.</summary>
+        /// <summary>
+        /// Reserved for future use. If this flag is specified, the API will return <see cref="JET_err.InvalidGrbit"/>.
+        /// </summary>
         Compact = 0x02,
 
-        /// <summary>Returns <see cref="JET_wrn.IdleFull"/> if version store is more than half full.</summary>
+        /// <summary>
+        /// Returns <see cref="JET_wrn.IdleFull"/> if version store is more than half full.
+        /// </summary>
         GetStatus = 0x04,
+    }
+
+    /// <summary>
+    /// Options for <see cref="Api.JetDefragment"/>.
+    /// </summary>
+    [Flags]
+    public enum DefragGrbit
+    {
+        /// <summary>
+        /// Defragments the available space portion of ESE database space
+        /// allocation. Database space is divided into two types, owned
+        /// space and available space. Owned space is allocated to a table
+        /// or index while available space is ready for use within the table
+        /// or index, respectively. Available space is much more dynamic in
+        /// behavior and requires on-line defragmentation more so than owned
+        /// space or table or index data.
+        /// </summary>
+        AvailSpaceTreesOnly = 0x40,
+
+        /// <summary>
+        /// Starts a new defragmentation task.
+        /// </summary>
+        BatchStart = 0x1,
+
+        /// <summary>
+        /// Stops a defragmentation task.
+        /// </summary>
+        BatchStop = 0x2, 
     }
 }

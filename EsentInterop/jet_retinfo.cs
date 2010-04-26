@@ -4,14 +4,23 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System.Runtime.InteropServices;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+
     /// <summary>
     /// The native version of the JET_RETINFO structure.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.DocumentationRules",
+        "SA1600:ElementsMustBeDocumented",
+        Justification = "Internal interop struct only.")]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal struct NATIVE_RETINFO
     {
         public static readonly int Size = Marshal.SizeOf(typeof(NATIVE_RETINFO));
@@ -24,6 +33,10 @@ namespace Microsoft.Isam.Esent.Interop
     /// <summary>
     /// Contains optional input and output parameters for JetRetrieveColumn.
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     public class JET_RETINFO
     {
         /// <summary>
@@ -66,8 +79,8 @@ namespace Microsoft.Isam.Esent.Interop
         /// <param name="value">The NATIVE_RETINFO which will be used to set the fields.</param>
         internal void SetFromNativeRetinfo(NATIVE_RETINFO value)
         {
-            this.ibLongValue = checked((int) value.ibLongValue);
-            this.itagSequence = checked((int) value.itagSequence);
+            this.ibLongValue = checked((int)value.ibLongValue);
+            this.itagSequence = checked((int)value.itagSequence);
 
             var columnid = new JET_COLUMNID { Value = value.columnidNextTagged };
             this.columnidNextTagged = columnid;

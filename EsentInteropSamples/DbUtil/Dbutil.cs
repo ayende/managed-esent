@@ -4,14 +4,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
 namespace Microsoft.Isam.Esent.Utilities
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Linq;
+
     /// <summary>
-    /// Database utilities
+    /// Database utilities.
     /// </summary>
     internal partial class Dbutil
     {
@@ -25,10 +25,12 @@ namespace Microsoft.Isam.Esent.Utilities
         /// </summary>
         public Dbutil()
         {
-            this.actions = new Dictionary<string, Action<string[]>>();
-            this.actions.Add("dumpmetadata", this.DumpMetaData);
-            this.actions.Add("createsample", this.CreateSampleDb);
-            this.actions.Add("dumptocsv", this.DumpToCsv);
+            this.actions = new Dictionary<string, Action<string[]>>
+            {
+                { "dumpmetadata", this.DumpMetaData },
+                { "createsample", this.CreateSampleDb },
+                { "dumptocsv", this.DumpToCsv }
+            };
         }
 
         /// <summary>

@@ -2,20 +2,23 @@
 // <copyright file="StockSample.cs" company="Microsoft Corporation">
 //     Copyright (c) Microsoft Corporation.
 // </copyright>
+// <summary>
+// A sample application that uses ManagedEsent.
+// </summary>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Isam.Esent.Interop;
-
-namespace CsStockSample
+namespace SampleApp
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Text;
+    using Microsoft.Isam.Esent.Interop;
+
     /// <summary>
     /// Create a sample database containing some stock prices and
     /// perform some basic queries.
     /// </summary>
-    public class StockSample
+    public static class StockSample
     {
         /// <summary>
         /// Name of the table that will store the prices.
@@ -45,8 +48,7 @@ namespace CsStockSample
         /// <summary>
         /// Called on program startup.
         /// </summary>
-        /// <param name="args">Arguments to the program. Ignored.</param>
-        public static void Main(string[] args)
+        public static void Main()
         {
             Console.WriteLine();
 
@@ -54,9 +56,10 @@ namespace CsStockSample
 
             // First create the database. A real application would probably
             // check for the database first and only create it if needed.
-            // Checking for the database can be done by calling JetAttachDatabase
-            // and seeing if a JET_ERR.DatabaseNotFound error is thrown.
-            // (Check the Error property of the EsentErrorException).
+            // Checking for the database can be done with File.Exists or
+            // by calling JetAttachDatabase and seeing if a JET_ERR.DatabaseNotFound
+            // error is thrown. (Check the Error property of the
+            // EsentErrorException).
             CreateDatabase(DatabaseName);
 
             // Now the database has been created we can attach to it
@@ -80,7 +83,10 @@ namespace CsStockSample
                 // automatically.
                 instance.Init();
 
-                // Create a disposable wrapper around the JET_SESID.
+                // Create a disposable wrapper around a new JET_SESID. All database
+                // access is done with a session (JET_SESID). Transactions and database
+                // record visibility are per-session. Do not share sessions between
+                // threads, instead create different sessions for different threads.
                 using (var session = new Session(instance))
                 {
                     JET_DBID dbid;
@@ -96,6 +102,11 @@ namespace CsStockSample
                     Api.JetOpenDatabase(session, DatabaseName, null, out dbid, OpenDatabaseGrbit.None);
 
                     // Create a disposable wrapper around the JET_TABLEID.
+                    // A JET_TABLEID acts as a database cursor, it can be used to:
+                    //  - Seek to a record
+                    //  - Retrieve columns from a record
+                    //  - Insert/Update/Delete a record
+                    //  - Move to the next/previous record
                     using (var table = new Table(session, dbid, TableName, OpenTableGrbit.None))
                     {
                         // Load the columnids from the table. This should be done each time the database is attached
@@ -229,8 +240,8 @@ namespace CsStockSample
             int price,
             int sharesOwned)
         {
-            // Prepare an update, set some columns and the save the update
-            // First, create a disposable wrapper around JetPrepareUpdate and JetUpdate
+            // Prepare an update, set some columns and then save the update.
+            // First, create a disposable wrapper around JetPrepareUpdate and JetUpdate.
             using (var update = new Update(sesid, tableid, JET_prep.Insert))
             {
                 Api.SetColumn(sesid, tableid, columnidSymbol, symbol, Encoding.Unicode);
@@ -247,6 +258,14 @@ namespace CsStockSample
                 // If update.Save isn't called then the update will 
                 // be cancelled when disposed (and the record won't
                 // be inserted).
+                //
+                // Inserting a record does not change the location of
+                // the cursor (JET_TABLEID), it will have the same
+                // location that it did before the insert. In order
+                // to insert a record and then position the cursor
+                // on the record use Update.SaveAndGotoBookmark. That
+                // call uses the bookmark returned from JetUpdate to
+                // position the tableid on the new record.
                 update.Save();
             }
         }
@@ -349,9 +368,9 @@ namespace CsStockSample
                 Api.MakeKey(sesid, tableid, namePrefix, Encoding.Unicode, MakeKeyGrbit.NewKey | MakeKeyGrbit.SubStrLimit);
                 Api.JetSetIndexRange(sesid, tableid, SetIndexRangeGrbit.RangeUpperLimit | SetIndexRangeGrbit.RangeInclusive);
                 
-                // there are records in the range. we can now iterate through the range.
-                // when the end of the range is hit we will get a 'no more records' error and
-                // the range will be removed (so subsequent moves will go to the end of the table)
+                // There are records in the range. We can now iterate through the range.
+                // When the end of the range is hit we will get a 'no more records' error and
+                // the range will be removed (so subsequent moves will go to the end of the table).
                 PrintRecordsToEnd(sesid, tableid);
             }
 
@@ -370,7 +389,7 @@ namespace CsStockSample
             // Set up an index range on the name index.
             Api.JetSetCurrentIndex(sesid, tableid, "price");
 
-            // First, seek to the beginning of the range
+            // First, seek to the beginning of the range.
             Api.MakeKey(sesid, tableid, low, MakeKeyGrbit.NewKey);
             if (Api.TrySeek(sesid, tableid, SeekGrbit.SeekGE))
             {
@@ -378,9 +397,9 @@ namespace CsStockSample
                 Api.MakeKey(sesid, tableid, high, MakeKeyGrbit.NewKey);
                 Api.JetSetIndexRange(sesid, tableid, SetIndexRangeGrbit.RangeUpperLimit);
 
-                // there are records in the range. we can now iterate through the range.
-                // when the end of the range is hit we will get a 'no more records' error and
-                // the range will be removed (so subsequent moves will go to the end of the table)
+                // There are records in the range. We can now iterate through the range.
+                // When the end of the range is hit we will get a 'no more records' error and
+                // the range will be removed (so subsequent moves will go to the end of the table).
                 PrintRecordsToEnd(sesid, tableid);
             }
 
@@ -406,7 +425,9 @@ namespace CsStockSample
             int lowPrice,
             int highPrice)
         {
-            // We need one cursor for each index
+            // We need one cursor for each index. Remember to close these cursors
+            // to avoid resource leaks. Here we use JetDupCursor, but JetOpenTable
+            // would work as well.
             JET_TABLEID nameIndex;
             Api.JetDupCursor(sesid, tableid, out nameIndex, DupCursorGrbit.None);
             Api.JetSetCurrentIndex(sesid, nameIndex, "name");
@@ -436,6 +457,9 @@ namespace CsStockSample
             }
 
             Console.WriteLine();
+
+            Api.JetCloseTable(sesid, nameIndex);
+            Api.JetCloseTable(sesid, priceIndex);
         }
 
         /// <summary>
@@ -458,11 +482,11 @@ namespace CsStockSample
         /// <param name="tableid">The table to dump the records from.</param>
         private static void PrintRecordsToEnd(JET_SESID sesid, JET_TABLEID tableid)
         {
-                do
-                {
-                    PrintOneRow(sesid, tableid);
-                }
-                while (Api.TryMoveNext(sesid, tableid));
+            do
+            {
+                PrintOneRow(sesid, tableid);
+            }
+            while (Api.TryMoveNext(sesid, tableid));
         }
 
         /// <summary>
@@ -476,7 +500,7 @@ namespace CsStockSample
             string name = Api.RetrieveColumnAsString(sesid, tableid, columnidName);
 
             // this column can't be null so we cast to an int
-            var price = (int)Api.RetrieveColumnAsInt32(sesid, tableid, columnidPrice);
+            int price = (int)Api.RetrieveColumnAsInt32(sesid, tableid, columnidPrice);
 
             // this column can be null so we keep the nullable type
             int? shares = Api.RetrieveColumnAsInt32(sesid, tableid, columnidShares);
@@ -555,14 +579,14 @@ namespace CsStockSample
 
                 // Current price, stored in cents : 32-bit integer
                 columndef = new JET_COLUMNDEF
-                    {
-                        coltyp = JET_coltyp.Long,
+                {
+                    coltyp = JET_coltyp.Long,
 
-                        // Be careful with ColumndefGrbit.ColumnNotNULL. Older versions of ESENT
-                        // (e.g. Windows XP) do not support this grbit for tagged or variable columns
-                        // (JET_coltyp.Text, JET_coltyp.LongText, JET_coltyp.Binary, JET_coltyp.LongBinary)
-                        grbit = ColumndefGrbit.ColumnNotNULL
-                    };
+                    // Be careful with ColumndefGrbit.ColumnNotNULL. Older versions of ESENT
+                    // (e.g. Windows XP) do not support this grbit for tagged or variable columns
+                    // (JET_coltyp.Text, JET_coltyp.LongText, JET_coltyp.Binary, JET_coltyp.LongBinary)
+                    grbit = ColumndefGrbit.ColumnNotNULL
+                };
 
                 Api.JetAddColumn(sesid, tableid, "price", columndef, null, 0, out columnid);
 
@@ -570,7 +594,13 @@ namespace CsStockSample
                 columndef.grbit = ColumndefGrbit.None;
                 Api.JetAddColumn(sesid, tableid, "shares_owned", columndef, null, 0, out columnid);
 
-                // The primary index is the stock symbol.
+                // Now add indexes. An index consists of several index segments (see
+                // EsentVersion.Capabilities.ColumnsKeyMost to determine the maximum number of
+                // segments). Each segment consists of a sort direction ('+' for ascending,
+                // '-' for descending), a column name and a '\0' separator. The index definition
+                // must end with "\0\0". The count of characters should include all terminators.
+
+                // The primary index is the stock symbol. The primary index is always unique.
                 string indexDef = "+symbol\0\0";
                 Api.JetCreateIndex(sesid, tableid, "primary", CreateIndexGrbit.IndexPrimary, indexDef, indexDef.Length, 100);
 
@@ -579,7 +609,7 @@ namespace CsStockSample
                 indexDef = "+name\0+symbol\0\0";
                 Api.JetCreateIndex(sesid, tableid, "name", CreateIndexGrbit.IndexUnique, indexDef, indexDef.Length, 100);
 
-                // An index on the price
+                // An index on the price. This index is not unique.
                 indexDef = "+price\0\0";
                 Api.JetCreateIndex(sesid, tableid, "price", CreateIndexGrbit.None, indexDef, indexDef.Length, 100);
 

@@ -4,13 +4,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Globalization;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Globalization;
+    using Microsoft.Isam.Esent.Interop.Implementation;
+
     /// <summary>
     /// Helper methods for the ESENT API. These methods deal with database
     /// meta-data.
@@ -31,23 +32,26 @@ namespace Microsoft.Isam.Esent.Interop
             {
                 // esent treats column names as case-insensitive, so we want the dictionary to be case insensitive as well
                 var dict = new Dictionary<string, JET_COLUMNID>(
-                    columnlist.cRecord, StringComparer.InvariantCultureIgnoreCase);
+                    columnlist.cRecord, StringComparer.OrdinalIgnoreCase);
                 if (columnlist.cRecord > 0)
                 {
-                    MoveBeforeFirst(sesid, columnlist.tableid);
-                    while (TryMoveNext(sesid, columnlist.tableid))
+                    if (Api.TryMoveFirst(sesid, columnlist.tableid))
                     {
-                        string name = RetrieveColumnAsString(
-                            sesid,
-                            columnlist.tableid,
-                            columnlist.columnidcolumnname,
-                            NativeMethods.Encoding,
-                            RetrieveColumnGrbit.None);
-                        var columnidValue =
-                            (uint) RetrieveColumnAsUInt32(sesid, columnlist.tableid, columnlist.columnidcolumnid);
+                        do
+                        {
+                            string name = RetrieveColumnAsString(
+                                sesid,
+                                columnlist.tableid,
+                                columnlist.columnidcolumnname,
+                                NativeMethods.Encoding,
+                                RetrieveColumnGrbit.None);
+                            var columnidValue =
+                                (uint)RetrieveColumnAsUInt32(sesid, columnlist.tableid, columnlist.columnidcolumnid);
 
-                        var columnid = new JET_COLUMNID() { Value = columnidValue };
-                        dict.Add(name, columnid);
+                            var columnid = new JET_COLUMNID() { Value = columnidValue };
+                            dict.Add(name, columnid);
+                        }
+                        while (TryMoveNext(sesid, columnlist.tableid));
                     }
                 }
 
@@ -61,6 +65,20 @@ namespace Microsoft.Isam.Esent.Interop
         }
 
         /// <summary>
+        /// Get the columnid of the specified column.
+        /// </summary>
+        /// <param name="sesid">The session to use.</param>
+        /// <param name="tableid">The table containing the column.</param>
+        /// <param name="columnName">The name of the column.</param>
+        /// <returns>The id of the column.</returns>
+        public static JET_COLUMNID GetTableColumnid(JET_SESID sesid, JET_TABLEID tableid, string columnName)
+        {
+            JET_COLUMNDEF columndef;
+            JetGetTableColumnInfo(sesid, tableid, columnName, out columndef);
+            return columndef.columnid;
+        }
+
+        /// <summary>
         /// Iterates over all the columns in the table, returning information about each one.
         /// </summary>
         /// <param name="sesid">The session to use.</param>
@@ -68,7 +86,9 @@ namespace Microsoft.Isam.Esent.Interop
         /// <returns>An iterator over ColumnInfo for each column in the table.</returns>
         public static IEnumerable<ColumnInfo> GetTableColumns(JET_SESID sesid, JET_TABLEID tableid)
         {
-            return new EnumerableColumnInfo(sesid, tableid);
+            JET_COLUMNLIST columnlist;
+            Api.JetGetTableColumnInfo(sesid, tableid, string.Empty, out columnlist);
+            return EnumerateColumnInfos(sesid, columnlist);
         }
 
         /// <summary>
@@ -124,20 +144,23 @@ namespace Microsoft.Isam.Esent.Interop
             JetGetObjectInfo(sesid, dbid, out objectlist);
             try
             {
-                MoveBeforeFirst(sesid, objectlist.tableid);
-                while (TryMoveNext(sesid, objectlist.tableid))
+                if (TryMoveFirst(sesid, objectlist.tableid))
                 {
-                    var flags = (uint) RetrieveColumnAsUInt32(sesid, objectlist.tableid, objectlist.columnidflags);
-                    if (ObjectInfoFlags.System != ((ObjectInfoFlags) flags & ObjectInfoFlags.System))
+                    do
                     {
-                        yield return
-                            RetrieveColumnAsString(
-                                sesid,
-                                objectlist.tableid,
-                                objectlist.columnidobjectname,
-                                NativeMethods.Encoding,
-                                RetrieveColumnGrbit.None);
+                        var flags = (uint)RetrieveColumnAsUInt32(sesid, objectlist.tableid, objectlist.columnidflags);
+                        if (ObjectInfoFlags.System != ((ObjectInfoFlags)flags & ObjectInfoFlags.System))
+                        {
+                            yield return
+                                RetrieveColumnAsString(
+                                    sesid,
+                                    objectlist.tableid,
+                                    objectlist.columnidobjectname,
+                                    NativeMethods.Encoding,
+                                    RetrieveColumnGrbit.None);
+                        }
                     }
+                    while (TryMoveNext(sesid, objectlist.tableid));
                 }
             }
             finally
@@ -158,10 +181,13 @@ namespace Microsoft.Isam.Esent.Interop
         {
             try
             {
-                MoveBeforeFirst(sesid, indexlist.tableid);
-                while (TryMoveNext(sesid, indexlist.tableid))
+                if (Api.TryMoveFirst(sesid, indexlist.tableid))
                 {
-                    yield return GetIndexInfoFromIndexlist(sesid, indexlist);
+                    do
+                    {
+                        yield return GetIndexInfoFromIndexlist(sesid, indexlist);
+                    }
+                    while (Api.TryMoveNext(sesid, indexlist.tableid));
                 }
             }
             finally
@@ -246,10 +272,13 @@ namespace Microsoft.Isam.Esent.Interop
         {
             try
             {
-                MoveBeforeFirst(sesid, columnlist.tableid);
-                while (TryMoveNext(sesid, columnlist.tableid))
+                if (Api.TryMoveFirst(sesid, columnlist.tableid))
                 {
-                    yield return GetColumnInfoFromColumnlist(sesid, columnlist);
+                    do
+                    {
+                        yield return GetColumnInfoFromColumnlist(sesid, columnlist);
+                    }
+                    while (Api.TryMoveNext(sesid, columnlist.tableid));
                 }
             }
             finally

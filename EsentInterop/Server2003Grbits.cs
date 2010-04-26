@@ -6,6 +6,43 @@
 
 namespace Microsoft.Isam.Esent.Interop.Server2003
 {
+    using System;
+
+    /// <summary>
+    /// Options for <see cref="Server2003Api.JetOSSnapshotAbort"/>.
+    /// </summary>
+    public enum SnapshotAbortGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,    
+    }
+
+    /// <summary>
+    /// Options for <see cref="Server2003Api.JetUpdate2"/>.
+    /// </summary>
+    public enum UpdateGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// This flag causes the update to return an error if the update would
+        /// not have been possible in the Windows 2000 version of ESE, which
+        /// enforced a smaller maximum number of multi-valued column instances
+        /// in each record than later versions of ESE. This is important only
+        /// for applications that wish to replicate data between applications
+        /// hosted on Windows 2000 and applications hosted on Windows 
+        /// 2003, or later versions of ESE. It should not be necessary for most
+        /// applications.
+        /// </summary>
+        [Obsolete("Only needed for legacy replication applications.")]
+        CheckESE97Compatibility = 0x1,
+    }
+
     /// <summary>
     /// Grbits that have been added to the Windows Server 2003 version of ESENT.
     /// </summary>
@@ -35,5 +72,15 @@ namespace Microsoft.Isam.Esent.Interop.Server2003
         /// operating systems.
         /// </remarks>
         public const EnumerateColumnsGrbit EnumerateIgnoreUserDefinedDefault = (EnumerateColumnsGrbit) 0x00100000;
+
+        /// <summary>
+        /// All transactions previously committed by any session that have not
+        /// yet been flushed to the transaction log file will be flushed immediately.
+        /// This API will wait until the transactions have been flushed before
+        /// returning to the caller. This option may be used even if the session
+        /// is not currently in a transaction. This option cannot be used in
+        /// combination with any other option.
+        /// </summary>
+        public const CommitTransactionGrbit WaitAllLevel0Commit = (CommitTransactionGrbit)0x8;
     }
 }

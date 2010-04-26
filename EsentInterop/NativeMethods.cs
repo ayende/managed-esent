@@ -4,20 +4,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-using System.Security;
-using System.Text;
-using Microsoft.Isam.Esent.Interop.Vista;
-
-namespace Microsoft.Isam.Esent.Interop
+namespace Microsoft.Isam.Esent.Interop.Implementation
 {
+    using System;
+    using System.Runtime.InteropServices;
+    using System.Security;
+    using System.Text;
+    using Microsoft.Isam.Esent.Interop.Vista;
+
     /// <summary>
     /// Native interop for functions in esent.dll.
     /// </summary>
     [SuppressUnmanagedCodeSecurity]
-    [BestFitMapping(false, ThrowOnUnmappableChar = false)]
-    internal static class NativeMethods
+    [BestFitMapping(false, ThrowOnUnmappableChar = true)]
+    internal static partial class NativeMethods
     {
         #region Configuration Constants
 
@@ -25,11 +25,6 @@ namespace Microsoft.Isam.Esent.Interop
         /// The CharSet for the methods in the DLL.
         /// </summary>
         private const CharSet EsentCharSet = CharSet.Ansi;
-
-        /// <summary>
-        /// The name of the DLL that the methods should be loaded from.
-        /// </summary>
-        private const string EsentDll = "esent.dll";
 
         /// <summary>
         /// Initializes static members of the NativeMethods class.
@@ -61,6 +56,19 @@ namespace Microsoft.Isam.Esent.Interop
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetInit2(ref IntPtr instance, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern unsafe int JetGetInstanceInfo(out uint pcInstanceInfo, out NATIVE_INSTANCE_INFO* prgInstanceInfo);
+
+        // Returns unicode strings in the NATIVE_INSTANCE_INFO.
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern unsafe int JetGetInstanceInfoW(out uint pcInstanceInfo, out NATIVE_INSTANCE_INFO* prgInstanceInfo);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetStopBackupInstance(IntPtr instance);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetStopServiceInstance(IntPtr instance);
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetTerm(IntPtr instance);
@@ -95,10 +103,22 @@ namespace Microsoft.Isam.Esent.Interop
         public static extern int JetCreateDatabaseW(IntPtr sesid, string szFilename, string szConnect, out uint dbid, uint grbit);
 
         [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetCreateDatabase2(IntPtr sesid, string szFilename, uint cpgDatabaseSizeMax, out uint dbid, uint grbit);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetCreateDatabase2W(IntPtr sesid, string szFilename, uint cpgDatabaseSizeMax, out uint dbid, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetAttachDatabase(IntPtr sesid, string szFilename, uint grbit);
 
         [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
         public static extern int JetAttachDatabaseW(IntPtr sesid, string szFilename, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetAttachDatabase2(IntPtr sesid, string szFilename, uint cpgDatabaseSizeMax, uint grbit);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetAttachDatabase2W(IntPtr sesid, string szFilename, uint cpgDatabaseSizeMax, uint grbit);
 
         [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetDetachDatabase(IntPtr sesid, string szFilename);
@@ -114,6 +134,105 @@ namespace Microsoft.Isam.Esent.Interop
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetCloseDatabase(IntPtr sesid, uint dbid, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetCompact(
+            IntPtr sesid, string szDatabaseSrc, string szDatabaseDest, IntPtr pfnStatus, IntPtr pconvert, uint grbit);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetCompactW(
+            IntPtr sesid, string szDatabaseSrc, string szDatabaseDest, IntPtr pfnStatus, IntPtr pconvert, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetGrowDatabase(IntPtr sesid, uint dbid, uint cpg, out uint pcpgReal);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetSetDatabaseSize(IntPtr sesid, string szDatabaseName, uint cpg, out uint pcpgReal);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetSetDatabaseSizeW(IntPtr sesid, string szDatabaseName, uint cpg, out uint pcpgReal);
+
+        #endregion
+
+        #region Backup/Restore
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetBackupInstance(
+            IntPtr instance, string szBackupPath, uint grbit, IntPtr pfnStatus);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetBackupInstanceW(
+            IntPtr instance, string szBackupPath, uint grbit, IntPtr pfnStatus);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetRestoreInstance(IntPtr instance, string sz, string szDest, IntPtr pfn);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetRestoreInstanceW(IntPtr instance, string sz, string szDest, IntPtr pfn);
+
+        #endregion
+
+        #region Snapshot Backup
+
+        // Introduced in Windows Server 2003
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetOSSnapshotAbort(IntPtr snapId, uint grbit);
+
+        // Introduced in Windows Vista
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetOSSnapshotEnd(IntPtr snapId, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern unsafe int JetOSSnapshotFreeze(
+            IntPtr snapId,
+            out uint pcInstanceInfo,
+            out NATIVE_INSTANCE_INFO* prgInstanceInfo,
+            uint grbit);
+
+        // Returns unicode strings in the NATIVE_INSTANCE_INFO.
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern unsafe int JetOSSnapshotFreezeW(
+            IntPtr snapId,
+            out uint pcInstanceInfo,
+            out NATIVE_INSTANCE_INFO* prgInstanceInfo,
+            uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetOSSnapshotPrepare(out IntPtr snapId, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetOSSnapshotThaw(IntPtr snapId, uint grbit);
+
+        #endregion
+
+        #region Snapshot Backup/Restore
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetBeginExternalBackupInstance(IntPtr instance, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetCloseFileInstance(IntPtr instance, IntPtr handle);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetEndExternalBackupInstance(IntPtr instance);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetEndExternalBackupInstance2(IntPtr instance, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetOpenFileInstance(
+            IntPtr instance, string szFileName, out IntPtr phfFile, out uint pulFileSizeLow, out uint pulFileSizeHigh);
+
+        [DllImport(EsentDll, CharSet = CharSet.Unicode, ExactSpelling = true)]
+        public static extern int JetOpenFileInstanceW(
+            IntPtr instance, string szFileName, out IntPtr phfFile, out uint pulFileSizeLow, out uint pulFileSizeHigh);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetReadFileInstance(
+            IntPtr instance, IntPtr handle, IntPtr pv, uint cb, out uint pcbActual);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetTruncateLogInstance(IntPtr instance);
 
         #endregion
 
@@ -141,7 +260,7 @@ namespace Microsoft.Isam.Esent.Interop
 
         #region tables
 
-        [DllImport(EsentDll, ExactSpelling = true)]
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetOpenTable(IntPtr sesid, uint dbid, string tablename, IntPtr pvParameters, uint cbParameters, uint grbit, out IntPtr tableid);
 
         [DllImport(EsentDll, ExactSpelling = true)]
@@ -150,12 +269,24 @@ namespace Microsoft.Isam.Esent.Interop
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetDupCursor(IntPtr sesid, IntPtr tableid, out IntPtr tableidNew, uint grbit);
 
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetComputeStats(IntPtr sesid, IntPtr tableid);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetSetLS(IntPtr sesid, IntPtr tableid, IntPtr ls, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetGetLS(IntPtr sesid, IntPtr tableid, out IntPtr pls, uint grbit);
+
         #endregion
 
         #region transactions
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetBeginTransaction(IntPtr sesid);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetBeginTransaction2(IntPtr sesid, uint grbit);
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetCommitTransaction(IntPtr sesid, uint grbit);
@@ -175,6 +306,9 @@ namespace Microsoft.Isam.Esent.Interop
 
         [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetDeleteColumn(IntPtr sesid, IntPtr tableid, string szColumnName);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetDeleteColumn2(IntPtr sesid, IntPtr tableid, string szColumnName, uint grbit);
 
         [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetDeleteIndex(IntPtr sesid, IntPtr tableid, string szIndexName);
@@ -241,7 +375,7 @@ namespace Microsoft.Isam.Esent.Interop
         [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetGetTableColumnInfo(IntPtr sesid, IntPtr tableid, string szColumnName, ref NATIVE_COLUMNDEF columndef, uint cbMax, uint InfoLevel);
 
-        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetGetTableColumnInfo(IntPtr sesid, IntPtr tableid, ref uint pcolumnid, ref NATIVE_COLUMNDEF columndef, uint cbMax, uint InfoLevel);
 
         [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
@@ -286,12 +420,32 @@ namespace Microsoft.Isam.Esent.Interop
             uint cbResult,
             uint InfoLevel);
 
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetRenameTable(IntPtr sesid, uint dbid, string szName, string szNameNew);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetRenameColumn(IntPtr sesid, IntPtr tableid, string szName, string szNameNew, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetSetColumnDefaultValue(
+            IntPtr sesid, uint tableid, string szTableName, string szColumnName, byte[] pvData, uint cbData, uint grbit);
+
         #endregion
 
         #region Navigation
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetGotoBookmark(IntPtr sesid, IntPtr tableid, [In] byte[] pvBookmark, uint cbBookmark);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetGotoSecondaryIndexBookmark(
+            IntPtr sesid,
+            IntPtr tableid,
+            [In] byte[] pvSecondaryKey,
+            uint cbSecondaryKey,
+            [In] byte[] pvPrimaryBookmark,
+            uint cbPrimaryBookmark,
+            uint grbit);
 
         // This has IntPtr and NATIVE_RETINFO versions because the parameter can be null
         [DllImport(EsentDll, ExactSpelling = true)]
@@ -314,8 +468,14 @@ namespace Microsoft.Isam.Esent.Interop
             [In] [Out] ref NATIVE_RECORDLIST recordlist,
             uint grbit);
 
-        [DllImport(EsentDll, ExactSpelling = true)]
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
         public static extern int JetSetCurrentIndex(IntPtr sesid, IntPtr tableid, string szIndexName);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetSetCurrentIndex2(IntPtr sesid, IntPtr tableid, string szIndexName, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetSetCurrentIndex3(IntPtr sesid, IntPtr tableid, string szIndexName, uint grbit, uint itagSequence);
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetIndexRecordCount(IntPtr sesid, IntPtr tableid, out uint crec, uint crecMax);
@@ -340,6 +500,18 @@ namespace Microsoft.Isam.Esent.Interop
         public static extern int JetGetBookmark(IntPtr sesid, IntPtr tableid, [Out] byte[] pvBookmark, uint cbMax, out uint cbActual);
 
         [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetGetSecondaryIndexBookmark(
+            IntPtr sesid,
+            IntPtr tableid,
+            [Out] byte[] secondaryKey,
+            uint secondaryKeySize,
+            out uint actualSecondaryKeySize,
+            [Out] byte[] primaryKey,
+            uint primaryKeySize,
+            out uint actualPrimaryKeySize,
+            uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetRetrieveColumn(IntPtr sesid, IntPtr tableid, uint columnid, IntPtr pvData, uint cbData, out uint cbActual, uint grbit, IntPtr pretinfo);
 
         [DllImport(EsentDll, ExactSpelling = true)]
@@ -352,6 +524,10 @@ namespace Microsoft.Isam.Esent.Interop
             out uint cbActual,
             uint grbit,
             [In] [Out] ref NATIVE_RETINFO pretinfo);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static unsafe extern int JetRetrieveColumns(
+            IntPtr sesid, IntPtr tableid, [In] [Out] NATIVE_RETRIEVECOLUMN* psetcolumn, uint csetcolumn);
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetRetrieveKey(IntPtr sesid, IntPtr tableid, [Out] byte[] pvData, uint cbMax, out uint cbActual, uint grbit);
@@ -369,6 +545,14 @@ namespace Microsoft.Isam.Esent.Interop
             uint cbDataMost,
             uint grbit);
 
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetGetRecordSize(
+            IntPtr sesid, IntPtr tableid, ref NATIVE_RECSIZE precsize, uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetGetRecordSize2(
+            IntPtr sesid, IntPtr tableid, ref NATIVE_RECSIZE2 precsize, uint grbit);
+
         #endregion
 
         #region DML
@@ -381,6 +565,9 @@ namespace Microsoft.Isam.Esent.Interop
 
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetUpdate(IntPtr sesid, IntPtr tableid, [Out] byte[] pvBookmark, uint cbBookmark, out uint cbActual);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetUpdate2(IntPtr sesid, IntPtr tableid, [Out] byte[] pvBookmark, uint cbBookmark, out uint cbActual, uint grbit);
 
         // This has IntPtr and NATIVE_SETINFO versions because the parameter can be null
         [DllImport(EsentDll, ExactSpelling = true)]
@@ -410,9 +597,40 @@ namespace Microsoft.Isam.Esent.Interop
 
         #endregion
 
-        #region Misc
+        #region Callbacks
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetRegisterCallback(
+            IntPtr sesid, IntPtr tableid, uint cbtyp, NATIVE_CALLBACK callback, IntPtr pvContext, out IntPtr pCallbackId);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetUnregisterCallback(IntPtr sesid, IntPtr tableid, uint cbtyp, IntPtr hCallbackId);
+
+        #endregion
+
+        #region Online Maintenance
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetDefragment(
+            IntPtr sesid, uint dbid, string szTableName, ref uint pcPasses, ref uint pcSeconds, uint grbit);
+
+        [DllImport(EsentDll, CharSet = EsentCharSet, ExactSpelling = true)]
+        public static extern int JetDefragment2(
+            IntPtr sesid, uint dbid, string szTableName, ref uint pcPasses, ref uint pcSeconds, IntPtr callback, uint grbit);
+
         [DllImport(EsentDll, ExactSpelling = true)]
         public static extern int JetIdle(IntPtr sesid, uint grbit);
+
+        #endregion
+
+        #region Misc
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetConfigureProcessForCrashDump(uint grbit);
+
+        [DllImport(EsentDll, ExactSpelling = true)]
+        public static extern int JetFreeBuffer(IntPtr pbBuf);
+
         #endregion
     }
 }

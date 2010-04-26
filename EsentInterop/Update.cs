@@ -4,15 +4,20 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+
     /// <summary>
     /// A class that encapsulates an update on a JET_TABLEID.
     /// </summary>
     public class Update : EsentResource
     {
+        /// <summary>
+        /// Cached retrieve buffers.
+        /// </summary>
+        private static readonly MemoryCache bookmarkCache = new MemoryCache(SystemParameters.BookmarkMost, 8);
+
         /// <summary>
         /// The underlying JET_SESID.
         /// </summary>
@@ -81,6 +86,26 @@ namespace Microsoft.Isam.Esent.Interop
         {
             int ignored;
             this.Save(null, 0, out ignored);
+        }
+
+        /// <summary>
+        /// Update the tableid and position the tableid on the record that was modified.
+        /// This can be useful when inserting a record because by default the tableid
+        /// remains in its old location.
+        /// </summary>
+        /// <remarks>
+        /// Save is the final step in performing an insert or an update. The update is begun by
+        /// calling creating an Update object and then by calling JetSetColumn or JetSetColumns one or more times
+        /// to set the record state. Finally, Update is called to complete the update operation.
+        /// Indexes are updated only by Update or and not during JetSetColumn or JetSetColumns
+        /// </remarks>
+        public void SaveAndGotoBookmark()
+        {
+            var bookmark = bookmarkCache.Allocate();
+            int actualBookmarkSize;
+            this.Save(bookmark, bookmark.Length, out actualBookmarkSize);
+            Api.JetGotoBookmark(this.sesid, this.tableid, bookmark, actualBookmarkSize);
+            bookmarkCache.Free(bookmark);
         }
 
         /// <summary>

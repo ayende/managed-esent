@@ -6,6 +6,58 @@
 
 namespace Microsoft.Isam.Esent.Interop.Windows7
 {
+    using System;
+
+    /// <summary>
+    /// Options for JetConfigureProcessForCrashDump.
+    /// </summary>
+    [Flags]
+    public enum CrashDumpGrbit
+    {
+        /// <summary>
+        /// Default options.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// Dump minimum includes <see cref="CacheMinimum"/>.
+        /// </summary>
+        Minimum = 0x1,
+
+        /// <summary>
+        /// Dump maximum includes <see cref="CacheMaximum"/>.
+        /// </summary>
+        Maximum = 0x2,
+
+        /// <summary>
+        /// CacheMinimum includes pages that are latched.
+        /// CacheMinimum includes pages that are used for memory.
+        /// CacheMinimum includes pages that are flagged with errors.
+        /// </summary>
+        CacheMinimum = 0x4,
+
+        /// <summary>
+        /// Cache maximum includes cache minimum.
+        /// Cache maximum includes the entire cache image.
+        /// </summary>
+        CacheMaximum = 0x8,
+
+        /// <summary>
+        /// Dump includes pages that are modified.
+        /// </summary>
+        CacheIncludeDirtyPages = 0x10,
+
+        /// <summary>
+        /// Dump includes pages that contain valid data.
+        /// </summary>
+        CacheIncludeCachedPages = 0x20,
+
+        /// <summary>
+        /// Dump includes pages that are corrupted (expensive to compute).
+        /// </summary>
+        CacheIncludeCorruptedPages = 0x40,
+    }
+
     /// <summary>
     /// Grbits that have been added to the Windows 7 version of ESENT.
     /// </summary>
@@ -49,5 +101,12 @@ namespace Microsoft.Isam.Esent.Interop.Windows7
         /// the record. This means that BLOB columns will not always be retrieved.
         /// </summary>
         public const EnumerateColumnsGrbit EnumerateInRecordOnly = (EnumerateColumnsGrbit) 0x00200000;
+
+        /// <summary>
+        /// Force a new logfile to be created. This option may be used even if
+        /// the session is not currently in a transaction. This option cannot
+        /// be used in combination with any other option.
+        /// </summary>
+        public const CommitTransactionGrbit ForceNewLog = (CommitTransactionGrbit)0x10;
     }
 }

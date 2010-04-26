@@ -4,12 +4,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Diagnostics;
-using System.Text;
-
 namespace Microsoft.Isam.Esent.Interop
 {
+    using System;
+    using System.Diagnostics;
+    using System.Runtime.Serialization;
+    using System.Runtime.Serialization.Formatters.Binary;
+    using System.Text;
+
     /// <summary>
     /// Helper methods for the ESENT API. These do data conversion for
     /// setting columns.
@@ -65,8 +67,8 @@ namespace Microsoft.Isam.Esent.Interop
                             sesid,
                             tableid,
                             columnid,
-                            (IntPtr) buffer,
-                            data.Length * sizeof(char),
+                            new IntPtr(buffer),
+                            checked(data.Length * sizeof(char)),
                             grbit,
                             null);
                     }
@@ -290,6 +292,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <param name="tableid">The cursor to update. An update should be prepared.</param>
         /// <param name="columnid">The columnid to set.</param>
         /// <param name="data">The data to set.</param>
+        [CLSCompliant(false)]
         public static void SetColumn(JET_SESID sesid, JET_TABLEID tableid, JET_COLUMNID columnid, ushort data)
         {
             unsafe
@@ -308,6 +311,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <param name="tableid">The cursor to update. An update should be prepared.</param>
         /// <param name="columnid">The columnid to set.</param>
         /// <param name="data">The data to set.</param>
+        [CLSCompliant(false)]
         public static void SetColumn(JET_SESID sesid, JET_TABLEID tableid, JET_COLUMNID columnid, uint data)
         {
             unsafe
@@ -326,6 +330,7 @@ namespace Microsoft.Isam.Esent.Interop
         /// <param name="tableid">The cursor to update. An update should be prepared.</param>
         /// <param name="columnid">The columnid to set.</param>
         /// <param name="data">The data to set.</param>
+        [CLSCompliant(false)]
         public static void SetColumn(JET_SESID sesid, JET_TABLEID tableid, JET_COLUMNID columnid, ulong data)
         {
             unsafe
@@ -337,7 +342,33 @@ namespace Microsoft.Isam.Esent.Interop
         }
 
         /// <summary>
-        /// Sets columns.
+        /// Write a serialized form of an object to a column.
+        /// </summary>
+        /// <param name="sesid">The session to use.</param>
+        /// <param name="tableid">The table to write to. An update should be prepared.</param>
+        /// <param name="columnid">The column to write to.</param>
+        /// <param name="value">The object to write. The object must be serializable.</param>
+        public static void SerializeObjectToColumn(JET_SESID sesid, JET_TABLEID tableid, JET_COLUMNID columnid, object value)
+        {
+            if (null == value)
+            {
+                Api.SetColumn(sesid, tableid, columnid, null);
+            }
+            else
+            {
+                using (var stream = new ColumnStream(sesid, tableid, columnid))
+                {
+                    var serializer = new BinaryFormatter
+                    {
+                        Context = new StreamingContext(StreamingContextStates.Persistence)
+                    };
+                    serializer.Serialize(stream, value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets columns from ColumnValue objects.
         /// </summary>
         /// <param name="sesid">The session to use.</param>
         /// <param name="tableid">The cursor to update. An update should be prepared.</param>
@@ -371,7 +402,8 @@ namespace Microsoft.Isam.Esent.Interop
         {
             const int AsciiCodePage = 20127;    // from MSDN
             const int UnicodeCodePage = 1200;   // from MSDN
-            if (!((encoding.CodePage == AsciiCodePage) || (encoding.CodePage == UnicodeCodePage)))
+            int codePage = encoding.CodePage;
+            if ((AsciiCodePage != codePage) && (UnicodeCodePage != codePage))
             {
                 throw new ArgumentOutOfRangeException(
                     "encoding", "Invalid Encoding type. Only ASCII and Unicode encodings are allowed");

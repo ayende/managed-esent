@@ -4,17 +4,22 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
-
 namespace Microsoft.Isam.Esent.Interop.Vista
 {
+    using System;
+    using System.Diagnostics.CodeAnalysis;
+    using System.Runtime.InteropServices;
+    using System.Text;
+
     /// <summary>
     /// Contains cumulative statistics on the work performed by the database
     /// engine on the current thread. This information is returned via
     /// <see cref="VistaApi.JetGetThreadStats"/>.
     /// </summary>
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1300:ElementMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     public struct JET_THREADSTATS
     {
         /// <summary>
@@ -67,36 +72,42 @@ namespace Microsoft.Isam.Esent.Interop.Vista
         /// <returns>A JET_THREADSTATS containing the result of adding the stats in t1 and t2.</returns>
         public static JET_THREADSTATS operator +(JET_THREADSTATS t1, JET_THREADSTATS t2)
         {
-            return new JET_THREADSTATS
+            checked
             {
-                cPageReferenced = t1.cPageReferenced + t2.cPageReferenced,
-                cPageRead = t1.cPageRead + t2.cPageRead,
-                cPagePreread = t1.cPagePreread + t2.cPagePreread,
-                cPageDirtied = t1.cPageDirtied + t2.cPageDirtied,
-                cPageRedirtied = t1.cPageRedirtied + t2.cPageRedirtied,
-                cLogRecord = t1.cLogRecord + t2.cLogRecord,
-                cbLogRecord = t1.cbLogRecord + t2.cbLogRecord,
-            };
+                return new JET_THREADSTATS
+                {
+                    cPageReferenced = t1.cPageReferenced + t2.cPageReferenced,
+                    cPageRead = t1.cPageRead + t2.cPageRead,
+                    cPagePreread = t1.cPagePreread + t2.cPagePreread,
+                    cPageDirtied = t1.cPageDirtied + t2.cPageDirtied,
+                    cPageRedirtied = t1.cPageRedirtied + t2.cPageRedirtied,
+                    cLogRecord = t1.cLogRecord + t2.cLogRecord,
+                    cbLogRecord = t1.cbLogRecord + t2.cbLogRecord,
+                };                
+            }
         }
 
         /// <summary>
-        /// Calculate the differeence in stats between two JET_THREADSTATS structures.
+        /// Calculate the difference in stats between two JET_THREADSTATS structures.
         /// </summary>
         /// <param name="t1">The first JET_THREADSTATS.</param>
         /// <param name="t2">The second JET_THREADSTATS.</param>
         /// <returns>A JET_THREADSTATS containing the difference in stats between t1 and t2.</returns>
         public static JET_THREADSTATS operator -(JET_THREADSTATS t1, JET_THREADSTATS t2)
         {
-            return new JET_THREADSTATS
+            checked
             {
-                cPageReferenced = t1.cPageReferenced - t2.cPageReferenced,
-                cPageRead = t1.cPageRead - t2.cPageRead,
-                cPagePreread = t1.cPagePreread - t2.cPagePreread,
-                cPageDirtied = t1.cPageDirtied - t2.cPageDirtied,
-                cPageRedirtied = t1.cPageRedirtied - t2.cPageRedirtied,
-                cLogRecord = t1.cLogRecord - t2.cLogRecord,
-                cbLogRecord = t1.cbLogRecord - t2.cbLogRecord,
-            };
+                return new JET_THREADSTATS
+                {
+                    cPageReferenced = t1.cPageReferenced - t2.cPageReferenced,
+                    cPageRead = t1.cPageRead - t2.cPageRead,
+                    cPagePreread = t1.cPagePreread - t2.cPagePreread,
+                    cPageDirtied = t1.cPageDirtied - t2.cPageDirtied,
+                    cPageRedirtied = t1.cPageRedirtied - t2.cPageRedirtied,
+                    cLogRecord = t1.cLogRecord - t2.cLogRecord,
+                    cbLogRecord = t1.cbLogRecord - t2.cbLogRecord,
+                };
+            }
         }
 
         /// <summary>
@@ -106,13 +117,13 @@ namespace Microsoft.Isam.Esent.Interop.Vista
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
-            sb.AppendFormat("{0} page reference{1}, ", this.cPageReferenced, GetPluralS(this.cPageReferenced));
-            sb.AppendFormat("{0} page{1} read, ", this.cPageRead, GetPluralS(this.cPageRead));
-            sb.AppendFormat("{0} page{1} preread, ", this.cPagePreread, GetPluralS(this.cPagePreread));
-            sb.AppendFormat("{0} page{1} dirtied, ", this.cPageDirtied, GetPluralS(this.cPageDirtied));
-            sb.AppendFormat("{0} page{1} redirtied, ", this.cPageRedirtied, GetPluralS(this.cPageRedirtied));
-            sb.AppendFormat("{0} log record{1}, ", this.cLogRecord, GetPluralS(this.cLogRecord));
-            sb.AppendFormat("{0} byte{1} logged", this.cbLogRecord, GetPluralS(this.cbLogRecord));
+            sb.AppendFormat("{0:N0} page reference{1}, ", this.cPageReferenced, GetPluralS(this.cPageReferenced));
+            sb.AppendFormat("{0:N0} page{1} read, ", this.cPageRead, GetPluralS(this.cPageRead));
+            sb.AppendFormat("{0:N0} page{1} preread, ", this.cPagePreread, GetPluralS(this.cPagePreread));
+            sb.AppendFormat("{0:N0} page{1} dirtied, ", this.cPageDirtied, GetPluralS(this.cPageDirtied));
+            sb.AppendFormat("{0:N0} page{1} redirtied, ", this.cPageRedirtied, GetPluralS(this.cPageRedirtied));
+            sb.AppendFormat("{0:N0} log record{1}, ", this.cLogRecord, GetPluralS(this.cLogRecord));
+            sb.AppendFormat("{0:N0} byte{1} logged", this.cbLogRecord, GetPluralS(this.cbLogRecord));
             return sb.ToString();
         }
 
@@ -137,7 +148,7 @@ namespace Microsoft.Isam.Esent.Interop.Vista
         /// Get the plural suffix ('s') for the given number.
         /// </summary>
         /// <param name="n">The number.</param>
-        /// <returns>'s' if n is greater than 1.</returns>
+        /// <returns>The letter 's' if n is greater than 1.</returns>
         private static string GetPluralS(int n)
         {
             return n == 1 ? String.Empty : "s";
@@ -148,6 +159,14 @@ namespace Microsoft.Isam.Esent.Interop.Vista
     /// The native version of the JET_THREADSTATS structure.
     /// </summary>
     [StructLayout(LayoutKind.Sequential)]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.DocumentationRules",
+        "SA1600:ElementsMustBeDocumented",
+        Justification = "Internal interop struct only.")]
+    [SuppressMessage(
+        "Microsoft.StyleCop.CSharp.NamingRules",
+        "SA1307:AccessibleFieldsMustBeginWithUpperCaseLetter",
+        Justification = "This should match the unmanaged API, which isn't capitalized.")]
     internal struct NATIVE_THREADSTATS
     {
         public static readonly int Size = Marshal.SizeOf(typeof(NATIVE_THREADSTATS));
